@@ -1,70 +1,86 @@
-# Getting Started with Create React App
+# React Redux setup
+- import `npm install @reduxjs/toolkit react-redux`
+    - `reduxjs/toolkit` is for configuring the store,
+    - `react-redux` is for using the `Provider` component and `useSelector`, `useDispatch` hooks from react-redux.
+    - don't worry about these fancy terms we'll discuss clearly in the further steps.
+- Create a folder `redux` for keeping all the boilerplate code
+- Create a `actionTypes` file for declaring all the types of actions that you want to perform and export them
+    - ex: `export const UPDATE_USER = 'UPDATE_USER'`
+- Create a `actionCreators` file for sending the actions to the reducer with the type and payload,
+    - create all the functions for each actionType like below
+        ```js
+        export const updateUser = (payload) => {
+            return {
+                type: UPDATE_USER,
+                payload: payload
+            }
+        }
+        ```
+        here type is the actionType you have created before, and payload is the new data that you want to update in the state.
+- Create a reducer which will take the state and action as parameter and updates the state based on the action.
+    - ex: 
+    ```js
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+    const initialState = {
+        username: '',
+        password: ''
+    }
 
-## Available Scripts
+    const userReducer = (state = initialState, action) => {
+        switch(action.type) {
+            case UPDATE_USER : {
+                return {
+                    email: action.payload.email,
+                    password: action.payload.password
+                }
+            }
+            default : return state
+        }
+    }
+    ```
+    - reducer need a initialState which will be updated in the components.
+    - action is an object which will be passed using the actionCreater we have prepared before, it will consists of the data that needs to be updated and the type of action we are trying to perform.
+    - by comparing the type we will perform the relavent action in returns the new state.
+- Creating a `store` to save the state
+    - store is where the state lands after dispatching from the reducer and from where we consume the state in components.
+    - create a store as below
+    ```
+    export default configureStore({
+        reducer: userReducer
+    })
+    ```
+    - here configureStore will create a new store for you by taking all your reducers.
+- Provide the store to application
+    - It's time to make our store accessible throughout the application,
+    - We have to wrap our `App.js` component with `Provider` component in `index.js` and it will take the store as prop.
+    - ex:
+    ```
+    <Provider store={store}>
+        <App />
+    </Provider>
+    ```
+- Now our application is all set to consume the state from the store and update the states from the components, let's see how we'll do that,
+    - To access the state we have a `hook` from `react-redux` called `useSelector`, it will take a function as argument which will send the state as parameter and returns the state from the store.
+    ex: `const user = useSelector(state => state)`
+    - Updating or dispatching a new data into the store.
+    - We have to import `useDispatch` hook which will return a function(dispatch) to send an action to the reducer. ex: `const dispatch = useDispatch()`
+    - we can call the dispatch by passing an actionCreator function which will take new state as argument.
+    - ex:
+    ```
+    <button onClick={() => dispatch(updateUser(newUser))}>Submit</button>
+    ```
+    - here a complete component of how to consume and update state.
+    ```js
+    const Index = () => {
 
-In the project directory, you can run:
+        const user = useSelector(state => state)
+        const dispatch = useDispatch()
 
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+        return(
+            <div>
+                <input onChange={(e) => dispatch(userUpdate({email: e.target.value}))}/>
+                <p>{user.email}</p>
+            </div>
+        )
+    }
+    ```
